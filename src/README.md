@@ -144,16 +144,15 @@ No simulador, antes que o `FileSystemManager` modifique suas estruturas de dados
 5.  **Interagindo com o Simulador:**
     *   Após a execução, o console da IDE exibirá o prompt do simulador (ex: `fs> `).
     *   Digite os comandos suportados e pressione Enter. Alguns comandos básicos incluem:
-        *   `help`: Lista todos os comandos disponíveis e suas descrições.
-        *   `mkdir <nome_diretorio>`: Cria um novo diretório no local atual.
-        *   `touch <nome_arquivo>`: Cria um novo arquivo vazio no local atual.
-        *   `ls`: Lista o conteúdo do diretório atual.
-        *   `cd <caminho_diretorio>`: Muda o diretório atual.
-        *   `pwd`: Mostra o caminho do diretório atual.
-        *   `rm <nome_arquivo>`: Remove um arquivo.
-        *   `rmdir <nome_diretorio>`: Remove um diretório vazio.
-        *   `cat <nome_arquivo>`: Exibe o conteúdo de um arquivo (se implementado).
-        *   `write <nome_arquivo> "<conteudo>"`: Escreve conteúdo em um arquivo (se implementado).
-        *   `exit`: Encerra o simulador.
+        *    `mkdir <nome_diretorio>`: Cria um novo diretório.
+*   `cd <caminho>`: Muda o diretório atual.
+*   `ls [caminho]`: Lista o conteúdo do diretório.
+*   `create <nome_arquivo>`: Cria um novo arquivo (exemplo).
+*   `rm <caminho>`: Remove um arquivo ou diretório (exemplo).
+*   `pwd`: Mostra o caminho do diretório atual.
+*   `log`: Mostra o log de operações do sistema (do Journal em memória).
+*   `journal flush`: Escreve todas as entradas do journal para `journal.log` e limpa o journal em memória.
+*   `help`: Mostra esta ajuda.
+*   `exit`: Sai do shell.
 
     *   Siga as instruções fornecidas pelo comando `help` para mais detalhes sobre o uso de cada comando.

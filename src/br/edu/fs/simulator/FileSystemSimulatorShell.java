@@ -1,170 +1,127 @@
-package br.edu.fs.simulator; // Ou o pacote onde esta classe deve estar
+package br.edu.fs.simulator;
+
 
 import java.util.Scanner;
 
 
 public class FileSystemSimulatorShell {
 
-    private static FileSystemManager fileSystemManager;
-    private static Journal journal;
-
-    public static void main(String[] args) {
-
-        if (fileSystemManager == null) {
-            System.out.println("[AVISO] FileSystemManager não inicializado. Alguns comandos não funcionarão.");
-        }
-        if (journal == null) {
-            System.out.println("[AVISO] Journal não inicializado. Comandos de journal não funcionarão.");
-        }
+    private FileSystemManager fsManager;
 
 
+    public FileSystemSimulatorShell() {
+
+        this.fsManager = new FileSystemManager();
+
+        System.out.println("File System Simulator Shell. Digite 'help' para comandos.");
+    }
+
+    public void start() {
         Scanner scanner = new Scanner(System.in);
+        String line;
         boolean running = true;
 
-        System.out.println("Bem-vindo ao File System Simulator!");
-        System.out.println("Digite 'help' para ver os comandos disponíveis.");
-
         while (running) {
-            System.out.print("fs> ");
-            String line = scanner.nextLine().trim();
+            System.out.print(fsManager.getCurrentPath() + "> ");
+            line = scanner.nextLine().trim();
+
             if (line.isEmpty()) {
                 continue;
             }
 
-            String[] parts = line.split("\s+", 2);
-            String commandName = parts[0].toLowerCase();
-            String arg = (parts.length > 1) ? parts[1] : null;
+            //
 
-            try {
-                switch (commandName) {
-                    case "help":
-                        displayHelp();
-                        break;
-                    case "mkdir":
-                        if (arg == null || arg.trim().isEmpty()) {
-                            System.out.println("Uso: mkdir <dirname>");
+            String[] parts = line.split("\s+", 2);
+            String command = parts[0].toLowerCase();
+            String arg = parts.length > 1 ? parts[1] : "";
+
+            switch (command) {
+                case "mkdir":
+                    if (!arg.isEmpty()) {
+                        fsManager.createDirectory(arg);
+                    } else {
+                        System.out.println("Uso: mkdir <nome_diretorio>");
+                    }
+                    break;
+                case "cd":
+                    if (!arg.isEmpty()) {
+                        fsManager.changeDirectory(arg);
+                    } else {
+                        System.out.println("Uso: cd <caminho>");
+                    }
+                    break;
+                case "ls":
+                    fsManager.listDirectory(arg.isEmpty() ? "." : arg);
+                    break;
+                case "create":
+                    if (!arg.isEmpty()) {
+                        fsManager.createFile(arg);
+                    } else {
+                        System.out.println("Uso: create <nome_arquivo>");
+                    }
+                    break;
+                case "rm":
+                    if (!arg.isEmpty()) {
+                        fsManager.delete(arg);
+                    } else {
+                        System.out.println("Uso: rm <caminho>");
+                    }
+                    break;
+                case "pwd":
+                    System.out.println(fsManager.getCurrentPath());
+                    break;
+                case "log":
+
+                    Journal journal = fsManager.getJournal();
+                    if (journal != null) {
+                        journal.printLog();
+                    } else {
+                        System.out.println("Erro: Journal não está disponível.");
+                    }
+                    break;
+                case "journal":
+                    if (arg.equalsIgnoreCase("flush")) {
+                        Journal j = fsManager.getJournal();
+                        if (j != null) {
+                            j.flushToFile("journal.log");
                         } else {
-                            System.out.println("Comando 'mkdir " + arg.trim() + "' (a ser implementado).");
+                            System.out.println("Erro: Journal não está disponível.");
                         }
-                        break;
-                    case "cd":
-                        if (arg == null || arg.trim().isEmpty()) {
-                            System.out.println("Uso: cd <dirname>");
-                        } else {
-                            System.out.println("Comando 'cd " + arg.trim() + "' (a ser implementado).");
-                        }
-                        break;
-                    case "ls":
-                        System.out.println("Comando 'ls " + (arg == null ? "" : arg.trim()) + "' (a ser implementado).");
-                        break;
-                    case "create":
-                        if (arg == null || arg.trim().isEmpty()) {
-                            System.out.println("Uso: create <filename> <content...>");
-                        } else {
-                            String[] createArgs = arg.trim().split("\s+", 2);
-                            if (createArgs.length < 2) {
-                                System.out.println("Uso: create <filename> <content...>");
-                            } else {
-                                String filename = createArgs[0];
-                                String content = createArgs[1];
-                                System.out.println("Comando 'create " + filename + " com conteúdo' (a ser implementado).");
-                            }
-                        }
-                        break;
-                    case "cat":
-                        if (arg == null || arg.trim().isEmpty()) {
-                            System.out.println("Uso: cat <filename>");
-                        } else {
-                            System.out.println("Comando 'cat " + arg.trim() + "' (a ser implementado).");
-                        }
-                        break;
-                    case "rm":
-                        if (arg == null || arg.trim().isEmpty()) {
-                            System.out.println("Uso: rm <path>");
-                        } else {
-                            System.out.println("Comando 'rm " + arg.trim() + "' (a ser implementado).");
-                        }
-                        break;
-                    case "rmdir":
-                        if (arg == null || arg.trim().isEmpty()) {
-                            System.out.println("Uso: rmdir <dirname>");
-                        } else {
-                            System.out.println("Comando 'rmdir " + arg.trim() + "' (a ser implementado).");
-                        }
-                        break;
-                    case "mv":
-                        if (arg == null || arg.trim().isEmpty() || arg.trim().split("\s+").length < 2) {
-                            System.out.println("Uso: mv <source> <destination>");
-                        } else {
-                            String[] mvArgs = arg.trim().split("\s+", 2);
-                            System.out.println("Comando 'mv " + mvArgs[0] + " " + mvArgs[1] + "' (a ser implementado).");
-                        }
-                        break;
-                    case "cp":
-                        if (arg == null || arg.trim().isEmpty() || arg.trim().split("\s+").length < 2) {
-                            System.out.println("Uso: cp <source> <destination>");
-                        } else {
-                            String[] cpArgs = arg.trim().split("\s+", 2);
-                            System.out.println("Comando 'cp " + cpArgs[0] + " " + cpArgs[1] + "' (a ser implementado).");
-                        }
-                        break;
-                    case "tree":
-                        System.out.println("Comando 'tree " + (arg == null ? "" : arg.trim()) + "' (a ser implementado).");
-                        break;
-                    case "search":
-                        if (arg == null || arg.trim().isEmpty()) {
-                            System.out.println("Uso: search <keyword> [path]");
-                        } else {
-                            String[] searchArgs = arg.trim().split("\s+", 2);
-                            String keyword = searchArgs[0];
-                            String searchPath = (searchArgs.length > 1) ? searchArgs[1] : null;
-                            System.out.println("Comando 'search " + keyword + (searchPath != null ? " in " + searchPath : "") + "' (a ser implementado).");
-                        }
-                        break;
-                    case "pwd":
-                        System.out.println("Comando 'pwd' (a ser implementado).");
-                        break;
-                    case "journal":
-                        if (arg != null && arg.equalsIgnoreCase("flush")) {
-                            System.out.println("Comando 'journal flush' (a ser implementado).");
-                        } else if (arg == null) {
-                            System.out.println("Comando 'journal' (a ser implementado).");
-                        } else {
-                            System.out.println("Uso: journal [flush]");
-                        }
-                        break;
-                    case "exit":
-                        running = false;
-                        System.out.println("Saindo do simulador...");
-                        break;
-                    default:
-                        System.out.println("Comando não reconhecido: " + commandName + ". Digite 'help' para ajuda.");
-                        break;
-                }
-            } catch (Exception e) {
-                System.err.println("Ocorreu um erro ao processar o comando: " + e.getMessage());
+                    } else {
+                        System.out.println("Uso: journal flush");
+                    }
+                    break;
+                case "help":
+                    printHelp();
+                    break;
+                case "exit":
+                    running = false;
+                    System.out.println("Saindo do simulador.");
+                    break;
+                default:
+                    System.out.println("Comando desconhecido: " + command);
+                    break;
             }
         }
         scanner.close();
     }
 
-    private static void displayHelp() {
+    private void printHelp() {
         System.out.println("Comandos disponíveis:");
-        System.out.println("  help                          - Mostra esta mensagem de ajuda.");
-        System.out.println("  mkdir <dirname>               - Cria um novo diretório.");
-        System.out.println("  cd <dirname>                  - Muda o diretório atual. Use '..' para subir.");
-        System.out.println("  ls [dirname]                  - Lista o conteúdo do diretório.");
-        System.out.println("  create <filename> <content>   - Cria um novo arquivo com conteúdo.");
-        System.out.println("  cat <filename>                - Mostra o conteúdo do arquivo.");
-        System.out.println("  rm <path>                     - Remove um arquivo ou diretório (vazio).");
-        System.out.println("  rmdir <dirname>               - Remove um diretório vazio (alternativa ao rm).");
-        System.out.println("  mv <source> <destination>     - Move/renomeia um arquivo ou diretório.");
-        System.out.println("  cp <source> <destination>     - Copia um arquivo ou diretório.");
-        System.out.println("  tree [dirname]                - Mostra a árvore de diretórios.");
-        System.out.println("  search <keyword> [path]       - Procura por uma palavra-chave em nomes/conteúdos.");
-        System.out.println("  pwd                           - Mostra o caminho do diretório de trabalho atual.");
-        System.out.println("  journal                       - Mostra todas as entradas do journal.");
-        System.out.println("  journal flush                 - Escreve todas as entradas do journal para journal.log e limpa o journal em memória.");
-        System.out.println("  exit                          - Sai do shell.");
+        System.out.println("  mkdir <nome_diretorio>    - Cria um novo diretório.");
+        System.out.println("  cd <caminho>              - Muda o diretório atual.");
+        System.out.println("  ls [caminho]              - Lista o conteúdo do diretório.");
+        System.out.println("  create <nome_arquivo>     - Cria um novo arquivo (exemplo).");
+        System.out.println("  rm <caminho>              - Remove um arquivo ou diretório (exemplo).");
+        System.out.println("  pwd                       - Mostra o caminho do diretório atual.");
+        System.out.println("  log                       - Mostra o log de operações do sistema (do Journal em memória).");
+        System.out.println("  journal flush             - Escreve todas as entradas do journal para journal.log e limpa o journal em memória.");
+        System.out.println("  help                      - Mostra esta ajuda.");
+        System.out.println("  exit                      - Sai do shell.");
+    }
+
+    public static void main(String[] args) {
+        FileSystemSimulatorShell shell = new FileSystemSimulatorShell();
+        shell.start();
     }
 }
